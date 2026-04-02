@@ -82,11 +82,14 @@ while not finish:
                 move_record.append(column)
 
         if turn == AI and not finish:
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
             column, minimax_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
             if valid_move(board, column):
                 row = get_next_open_row(board, column) #top row of the column
                 drop_piece(board, row, column, AI_PIECE)
-                print("AI dropped piece at row " + str(row) + ", column " + str(column))
+                print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms)")
                 if winning_move(board, AI_PIECE):
                     print("-----> AI wins!")
                     finish = True
