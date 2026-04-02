@@ -1,4 +1,6 @@
 import pygame
+import pygame_widgets
+from pygame_widgets.dropdown import Dropdown #for the dropdown menu
 from Board import * #get everything from board.py
 #note: most board functions were separated into board.py
 #so the AI algorithms can import from there instead of here
@@ -16,6 +18,7 @@ BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+algorithm = str() #empty for now, picked in start menu
 
 #board ui functions
 def draw_board(board):
@@ -39,6 +42,60 @@ def preview_move(event):
     pygame.draw.circle(screen, RED, (xpos, int(SQUARESIZE / 2)), RADIUS) #red circle at x pos of mouse
     pygame.display.update() #new frame
 
+def start_menu():
+    global algorithm
+    menu_running = True
+    font_title = pygame.font.SysFont("monospace", 80)
+    font_small = pygame.font.SysFont("monospace", 40)
+    dropdown = Dropdown(
+    screen, 120, height // 2, 250, 50,
+    name='Select Algorithm',
+    choices=[
+        'Minimax',
+        'Minimax with Alpha-Beta Pruning',
+        'Random'
+    ],
+    borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
+    textHAlign='centre' #breaks if you spell it as "center", watch out!
+    )
+
+    while menu_running:
+        screen.fill(BLACK)
+        title = font_title.render("Connect Four", True, YELLOW)
+        screen.blit(title, (width // 2 - title.get_width() // 2, 100))
+        text = font_small.render("Press ENTER to Start", True, YELLOW)
+        screen.blit(text, (width // 2 - text.get_width() // 2, height - 150))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and dropdown.getSelected() is not None: #only start if an algorithm is selected
+                    algorithm = dropdown.getSelected()
+                    menu_running = False
+        dropdown.draw()
+        pygame_widgets.update(pygame.event.get()) #update the dropdown state
+        pygame.display.update()
+
+def match_algorithm(insert_algorithm):
+    algorithm_score = 0
+    match insert_algorithm:
+        case "Minimax":
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = minimax(board, DEPTH, True) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case "Minimax with Alpha-Beta Pruning":
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case _: #default is alpha-beta for now
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+    return column, algorithm_score, elapsed
 # pygame setup
 board = create_board()
 pygame.init()
@@ -46,13 +103,14 @@ pygame.init()
 width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT + 1) * SQUARESIZE
 screen = pygame.display.set_mode((width, height))
-draw_board(board)
 #"start" game variables
 clock = pygame.time.Clock()
 finish = False
 turn = PLAYER
 move_record = [] #record the moves made (columns)
 
+start_menu() #show the start menu before starting the game
+draw_board(board)
 # main game process
 while not finish:
     # poll for events
@@ -82,10 +140,7 @@ while not finish:
                 move_record.append(column)
 
         if turn == AI and not finish:
-            timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, minimax_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
-            timer_end = pygame.time.get_ticks()
-            elapsed = timer_end - timer_start
+            column, algorithm_score, elapsed = match_algorithm(algorithm)
             if valid_move(board, column):
                 row = get_next_open_row(board, column) #top row of the column
                 drop_piece(board, row, column, AI_PIECE)
