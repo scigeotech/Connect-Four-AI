@@ -8,3 +8,4 @@ plan:
     b. trim scans to only those rows and cut down computation time
 5. record-keeping (write to .txt file with game record, algorithm used and performance data)
 6. make ai play against itself
+7. (not important) highlight winning pieces in green

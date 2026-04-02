@@ -89,7 +89,7 @@ while not finish:
             if valid_move(board, column):
                 row = get_next_open_row(board, column) #top row of the column
                 drop_piece(board, row, column, AI_PIECE)
-                print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms)")
+                print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
                 if winning_move(board, AI_PIECE):
                     print("-----> AI wins!")
                     finish = True
