@@ -96,8 +96,15 @@ def match_algorithm(insert_algorithm):
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
     return column, algorithm_score, elapsed
+
+def reset_game():
+    board_clear = create_board()
+    move_record_clear = [] #record the moves made (columns)
+    turn_clear = PLAYER
+    finish_clear = False
+    return board_clear, move_record_clear, turn_clear, finish_clear
+
 # pygame setup
-board = create_board()
 pygame.init()
 #build screen
 width = COLUMN_COUNT * SQUARESIZE
@@ -105,11 +112,9 @@ height = (ROW_COUNT + 1) * SQUARESIZE
 screen = pygame.display.set_mode((width, height))
 #"start" game variables
 clock = pygame.time.Clock()
-finish = False
-turn = PLAYER
-move_record = [] #record the moves made (columns)
 
 start_menu() #show the start menu before starting the game
+board, move_record, turn, finish = reset_game() #initialize with a reset
 draw_board(board)
 # main game process
 while not finish:
@@ -158,7 +163,20 @@ while not finish:
         
         if finish:
             print("Game finished! Move record: " + str(move_record))
-            pygame.time.wait(5000) #for staring at the screen
+            print("Press enter to play again, or any other key to quit (you can also just close the window).")
+            waiting_for_input = True #NOTE: put a win/loss indicator so user doesn't have to check console
+            while waiting_for_input:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        waiting_for_input = False
+                        finish = True
+                    if event.type == pygame.KEYDOWN:
+                        waiting_for_input = False
+                        if event.key == pygame.K_RETURN:
+                            board, move_record, turn, finish = reset_game() #reset game variables
+                            draw_board(board) #update game state
+                        else:
+                            finish = True
             
 
 pygame.quit()
