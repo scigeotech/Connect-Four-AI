@@ -6,6 +6,7 @@ from Board import * #get everything from board.py
 #so the AI algorithms can import from there instead of here
 #otherwise they would be importing from each other
 from Minimax import * 
+from Negamax import *
 
 DEPTH = 5 #how many moves ahead the minimax algorithm should look (default is 5)
 #turn number
@@ -56,6 +57,8 @@ def start_menu():
         'Random',
         'Greedy',
         'Monte Carlo'
+        'Negamax',
+        'Negamax with Alpha-Beta Pruning'
     ],
     borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
     textHAlign='centre' #breaks if you spell it as "center", watch out!
@@ -109,6 +112,16 @@ def match_algorithm(insert_algorithm):
             column, algorithm_score = monte_carlo_move(board, 50)
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start    
+        case "Negamax":
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = negamax(board, DEPTH, 1) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case "Negamax with Alpha-Beta Pruning":
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, 1) #get the best move from the negamax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
         case _: #default is alpha-beta for now
             timer_start = pygame.time.get_ticks() #for timing the AI's move
             column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm

@@ -20,7 +20,7 @@ def minimax(board, depth, maximizingPlayer):
         column = random.choice(valid_moves)
         for col in valid_moves:
             board_copy = board.copy()
-            drop_piece(board_copy, get_next_open_row(board, col), col, AI_PIECE) #simulate dropping a piece
+            drop_piece(board_copy, get_next_open_row(board_copy, col), col, AI_PIECE) #simulate dropping a piece
             new_score = minimax(board_copy, depth - 1, False)[1]
             if new_score > minimax_score:
                 minimax_score = new_score
@@ -59,7 +59,7 @@ def minimax_pruned(board, depth, alpha, beta, maximizingPlayer):
         column = random.choice(valid_moves)
         for col in valid_moves:
             board_copy = board.copy()
-            drop_piece(board_copy, get_next_open_row(board, col), col, AI_PIECE) #simulate dropping a piece
+            drop_piece(board_copy, get_next_open_row(board_copy, col), col, AI_PIECE) #simulate dropping a piece
             new_score = minimax_pruned(board_copy, depth - 1, alpha, beta, False)[1]
             if new_score > minimax_score:
                 minimax_score = new_score
@@ -117,7 +117,7 @@ def random_playout(board, turn):
             turn = PLAYER_PIECE
         else:
             drop_piece(board_copy, row, col, PLAYER_PIECE)
-            turn = AI_PIECE
+            turn = AI_PIECEs
 
     if winning_move(board_copy, AI_PIECE):
         return 1
