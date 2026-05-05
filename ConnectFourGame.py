@@ -85,17 +85,17 @@ def start_menu():
         pygame_widgets.update(pygame.event.get()) #update the dropdown state
         pygame.display.update()
 
-def match_algorithm(insert_algorithm):
+def match_algorithm(insert_algorithm, maximizing, color):
     algorithm_score = 0
     match insert_algorithm:
         case "Minimax":
             timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, algorithm_score = minimax(board, DEPTH, True) #get the best move from the minimax algorithm
+            column, algorithm_score = minimax(board, DEPTH, maximizing) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case "Minimax with Alpha-Beta Pruning":
             timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
+            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, maximizing) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case "Greedy":
@@ -107,7 +107,6 @@ def match_algorithm(insert_algorithm):
             timer_start = pygame.time.get_ticks()
             valid_moves = get_valid_moves(board)
             column = random.choice(valid_moves)
-            algorithm_score = 0
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case "Monte Carlo":
@@ -117,17 +116,17 @@ def match_algorithm(insert_algorithm):
             elapsed = timer_end - timer_start    
         case "Negamax":
             timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, algorithm_score = negamax(board, DEPTH, 1) #get the best move from the minimax algorithm
+            column, algorithm_score = negamax(board, DEPTH, color) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case "Negamax with Alpha-Beta Pruning":
             timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, 1) #get the best move from the negamax algorithm
+            column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, color) #get the best move from the negamax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case _: #default is alpha-beta for now
             timer_start = pygame.time.get_ticks() #for timing the AI's move
-            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
+            column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, maximizing) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         
@@ -181,7 +180,7 @@ while not finish:
                 move_record.append(column)
 
         if turn == AI and not finish:
-            column, algorithm_score, elapsed = match_algorithm(algorithm)
+            column, algorithm_score, elapsed = match_algorithm(algorithm, True, 1)
             if valid_move(board, column):
                 row = get_next_open_row(board, column) #top row of the column
                 drop_piece(board, row, column, AI_PIECE)
