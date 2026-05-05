@@ -53,7 +53,9 @@ def start_menu():
     choices=[
         'Minimax',
         'Minimax with Alpha-Beta Pruning',
-        'Random'
+        'Random',
+        'Greedy',
+        'Monte Carlo'
     ],
     borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
     textHAlign='centre' #breaks if you spell it as "center", watch out!
@@ -90,11 +92,29 @@ def match_algorithm(insert_algorithm):
             column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
+        case "Greedy":
+            timer_start = pygame.time.get_ticks()
+            column, algorithm_score = greedy_move(board, AI_PIECE)
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case "Random":
+            timer_start = pygame.time.get_ticks()
+            valid_moves = get_valid_moves(board)
+            column = random.choice(valid_moves)
+            algorithm_score = 0
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case "Monte Carlo":
+            timer_start = pygame.time.get_ticks()
+            column, algorithm_score = monte_carlo_move(board, 50)
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start    
         case _: #default is alpha-beta for now
             timer_start = pygame.time.get_ticks() #for timing the AI's move
             column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, True) #get the best move from the minimax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
+        
     return column, algorithm_score, elapsed
 
 def reset_game():
