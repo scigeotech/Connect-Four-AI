@@ -11,6 +11,7 @@ from Negamax import *
 from Greedy import *
 from MonteCarlo import *
 
+RENDER = True #whether to render the game visually with pygame (can be set to false for ai v. ai)
 DEPTH = 5 #how many moves ahead the minimax algorithm should look (default is 5)
 MONTE_CARLO_SIMULATIONS = 50 #how many random playouts the Monte Carlo algorithm should do per move (default is 50)
 #turn number
@@ -32,6 +33,8 @@ ai_decision_time_average = [0, 0] #total time and turns, so avg = time / turns
 
 #board ui functions
 def draw_board(board):
+    if not RENDER: #skip if rendering is off
+        return
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
             pygame.draw.rect(screen, BLUE, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE)) #draw blue background
@@ -46,6 +49,8 @@ def draw_board(board):
     pygame.display.update() #new frame
 
 def preview_move(event):
+    if not RENDER: #skip if rendering is off
+        return
     column = int(event.pos[0] / SQUARESIZE) #get the column of the mouse
     xpos = int(column * SQUARESIZE + SQUARESIZE / 2) #x pos of the circle, with centering
     pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE)) #clear the top row
@@ -93,6 +98,7 @@ def start_menu():
         textHAlign='centre'
     )
     textbox_iterations.hide() #only show if player selects AI for player algorithm
+    error_text = ""  # init empty error message
 
     while menu_running:
         events = pygame.event.get()
@@ -114,6 +120,11 @@ def start_menu():
         text = font_small.render(prompt, True, YELLOW)
         screen.blit(text, (width // 2 - text.get_width() // 2, height - 150))
 
+        #show error
+        if error_text:
+            error_display = font_small.render(error_text, True, RED)
+            screen.blit(error_display, (width // 2 - error_display.get_width() // 2, height - 100))
+
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -124,6 +135,7 @@ def start_menu():
                     ai_algorithm = dropdown_ai.getSelected()
                     if player_algorithm != 'Human':
                         entered = textbox_iterations.getText().strip()
+                        error_text = ""  #clear prev error
                         if entered == "":
                             error_text = "Please enter number of games."
                         else:
@@ -183,7 +195,7 @@ width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT + 1) * SQUARESIZE
 screen = pygame.display.set_mode((width, height))
 #"start" game variables
-clock = pygame.time.Clock()
+#clock = pygame.time.Clock()
 
 start_menu() #show the start menu before starting the game
 board, move_record, turn, finish = reset_game() #initialize with a reset
