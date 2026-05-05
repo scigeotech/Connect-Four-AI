@@ -217,7 +217,7 @@ while not finish:
             if valid_move(board, column):
                 row = get_next_open_row(board, column) #top row of the column
                 drop_piece(board, row, column, PLAYER_PIECE)
-                print("Player dropped piece at row " + str(row) + ", column " + str(column))
+                #print("Player dropped piece at row " + str(row) + ", column " + str(column))
                 if winning_move(board, PLAYER_PIECE):
                     record[0] += 1 #add 1 player win to the record
                     print("-----> Player wins!")
@@ -231,62 +231,63 @@ while not finish:
                 draw_board(board) #update game state
                 move_record.append(column)
 
-        if turn == PLAYER and not finish and player_algorithm != "Human":
-            column, algorithm_score, elapsed = match_algorithm(player_algorithm, True, 1)
-            if valid_move(board, column):
-                row = get_next_open_row(board, column)
-                drop_piece(board, row, column, PLAYER_PIECE)
-                player_decision_time_average[0] += elapsed
-                player_decision_time_average[1] += 1
-                print("Player algorithm dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
-                if winning_move(board, PLAYER_PIECE):
-                    record[0] += 1 #add 1 player win to the record
-                    print("-----> Player wins!")
-                    finish = True
-                elif is_terminal_node(board):
-                    record[2] += 1 #add 1 draw to the record
-                    print("It's a draw!")
-                    finish = True
-                else:
-                    turn = AI
-                draw_board(board)
-                move_record.append(column)
+    #calculate algorithm moves outside of event loop so they run every frame
+    if turn == PLAYER and not finish and player_algorithm != "Human":
+        column, algorithm_score, elapsed = match_algorithm(player_algorithm, True, 1)
+        if valid_move(board, column):
+            row = get_next_open_row(board, column)
+            drop_piece(board, row, column, PLAYER_PIECE)
+            player_decision_time_average[0] += elapsed
+            player_decision_time_average[1] += 1
+            #print("Player algorithm dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
+            if winning_move(board, PLAYER_PIECE):
+                record[0] += 1 #add 1 player win to the record
+                print("-----> Player wins!")
+                finish = True
+            elif is_terminal_node(board):
+                record[2] += 1 #add 1 draw to the record
+                print("It's a draw!")
+                finish = True
+            else:
+                turn = AI
+            draw_board(board)
+            move_record.append(column)
 
-        if turn == AI and not finish:
-            column, algorithm_score, elapsed = match_algorithm(ai_algorithm, True, 1)
-            if valid_move(board, column):
-                row = get_next_open_row(board, column) #top row of the column
-                drop_piece(board, row, column, AI_PIECE)
-                ai_decision_time_average[0] += elapsed
-                ai_decision_time_average[1] += 1
-                print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
-                if winning_move(board, AI_PIECE):
-                    record[1] += 1 #add 1 AI win to the record
-                    print("-----> AI wins!")
-                    finish = True
-                elif is_terminal_node(board):
-                    record[2] += 1 #add 1 draw to the record
-                    print("It's a draw!")
-                    finish = True
-                else:
-                    turn = PLAYER 
-                draw_board(board) #update game state
-                move_record.append(column)
-        
-        if finish:
+    if turn == AI and not finish:
+        column, algorithm_score, elapsed = match_algorithm(ai_algorithm, True, 1)
+        if valid_move(board, column):
+            row = get_next_open_row(board, column) #top row of the column
+            drop_piece(board, row, column, AI_PIECE)
+            ai_decision_time_average[0] += elapsed
+            ai_decision_time_average[1] += 1
+            #print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
+            if winning_move(board, AI_PIECE):
+                record[1] += 1 #add 1 AI win to the record
+                print("-----> AI wins!")
+                finish = True
+            elif is_terminal_node(board):
+                record[2] += 1 #add 1 draw to the record
+                print("It's a draw!")
+                finish = True
+            else:
+                turn = PLAYER 
+            draw_board(board) #update game state
+            move_record.append(column)
+    
+    if finish:
             if player_algorithm != "Human" and iterations_remaining > 1:
+                print("Game finished! Move record: " + str(move_record))
                 iterations_remaining -= 1
                 board, move_record, turn, finish = reset_game()
                 draw_board(board)
-                print("Game finished! Move record: " + str(move_record))
                 print(f"Starting next AI vs AI game! ({iterations_remaining} iterations remaining)")
             else:
                 print("Game finished! Move record: " + str(move_record))
                 print(f"[RECORD DATA:] Player wins: {record[0]} ({record[0]/sum(record)*100:.1f}%), AI wins: {record[1]} ({record[1]/sum(record)*100:.1f}%), Draws: {record[2]} ({record[2]/sum(record)*100:.1f}%)")
                 if player_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
-                    print(f"Average player decision time: {player_decision_time_average[0] / player_decision_time_average[1]:.2f} ms")
+                    print(f"Average AI-1 ({player_algorithm}) decision time: {player_decision_time_average[0] / player_decision_time_average[1]:.2f} ms")
                 if ai_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
-                    print(f"Average AI decision time: {ai_decision_time_average[0] / ai_decision_time_average[1]:.2f} ms")
+                    print(f"Average AI-2 ({ai_algorithm}) decision time: {ai_decision_time_average[0] / ai_decision_time_average[1]:.2f} ms")
                 print("Press enter to repeat, or any other key to quit (you can also just close the window).")
                 waiting_for_input = True #NOTE: put a win/loss indicator so user doesn't have to check console
                 while waiting_for_input:
