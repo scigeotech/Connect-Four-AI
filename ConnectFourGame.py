@@ -54,7 +54,8 @@ def start_menu():
     choices=[
         'Minimax',
         'Minimax with Alpha-Beta Pruning',
-        'Negamax'
+        'Negamax',
+        'Negamax with Alpha-Beta Pruning'
     ],
     borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
     textHAlign='centre' #breaks if you spell it as "center", watch out!
@@ -94,6 +95,11 @@ def match_algorithm(insert_algorithm):
         case "Negamax":
             timer_start = pygame.time.get_ticks() #for timing the AI's move
             column, algorithm_score = negamax(board, DEPTH, 1) #get the best move from the minimax algorithm
+            timer_end = pygame.time.get_ticks()
+            elapsed = timer_end - timer_start
+        case "Negamax with Alpha-Beta Pruning":
+            timer_start = pygame.time.get_ticks() #for timing the AI's move
+            column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, 1) #get the best move from the negamax algorithm
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start
         case _: #default is alpha-beta for now
