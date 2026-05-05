@@ -7,9 +7,12 @@ from Board import * #get everything from board.py
 #otherwise they would be importing from each other
 from Minimax import * 
 from Negamax import *
+from Greedy import *
+from MonteCarlo import *
 
 DEPTH = 5 #how many moves ahead the minimax algorithm should look (default is 5)
 #turn number
+MONTE_CARLO_SIMULATIONS = 50 #how many random playouts the Monte Carlo algorithm should do per move (default is 50)
 PLAYER = 0
 AI = 1
 #UI
@@ -56,7 +59,7 @@ def start_menu():
         'Minimax with Alpha-Beta Pruning',
         'Random',
         'Greedy',
-        'Monte Carlo'
+        'Monte Carlo',
         'Negamax',
         'Negamax with Alpha-Beta Pruning'
     ],
@@ -109,7 +112,7 @@ def match_algorithm(insert_algorithm):
             elapsed = timer_end - timer_start
         case "Monte Carlo":
             timer_start = pygame.time.get_ticks()
-            column, algorithm_score = monte_carlo_move(board, 50)
+            column, algorithm_score = monte_carlo_move(board, MONTE_CARLO_SIMULATIONS)
             timer_end = pygame.time.get_ticks()
             elapsed = timer_end - timer_start    
         case "Negamax":
