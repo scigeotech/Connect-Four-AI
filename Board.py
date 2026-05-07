@@ -107,3 +107,9 @@ def winning_move(board, piece): #check from piece position
 
 def is_terminal_node(board): #if either wins, or if no more valid moves (tie)
     return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_moves(board)) == 0
+
+def get_opponent(piece):
+    if piece == PLAYER_PIECE:
+        return AI_PIECE
+    if piece == AI_PIECE:
+        return PLAYER_PIECE

@@ -64,12 +64,14 @@ def start_menu():
     font_small = pygame.font.SysFont("monospace", 20)
     choices = [
         'Human',
-        #'Minimax',
-        'Minimax with Alpha-Beta Pruning',
-        'Random',
+        'Minimax (Optimized v2)',
+        #'Minimax with Alpha-Beta Pruning',
+        #'Random',
         'Greedy',
+        'Las Vegas (Greedy)',
         'Monte Carlo',
-        #'Negamax',
+        'Monte Carlo Optimized',
+        'Negamax (Divergent Evolution)',
         'Negamax with Alpha-Beta Pruning'
     ]
     
@@ -156,23 +158,29 @@ def start_menu():
         pygame_widgets.update(events) #update the dropdown and textbox state
         pygame.display.update()
 
-def match_algorithm(insert_algorithm, maximizing, color):
+def match_algorithm(insert_algorithm, maximizing, color, piece):
     algorithm_score = 0
     timer_start = pygame.time.get_ticks() #for timing the AI's move
     match insert_algorithm:
-        case "Minimax":
-            column, algorithm_score = minimax(board, DEPTH, maximizing) #get the best move from the minimax algorithm
+        case "Minimax (Optimized v2)":
+            #column, algorithm_score = minimax(board, DEPTH, maximizing) #get the best move from the minimax algorithm
+            column, algorithm_score = minimax_pruned_neutral(board, DEPTH, -math.inf, math.inf, maximizing, piece) #get the best move from the minimax algorithm
         case "Minimax with Alpha-Beta Pruning":
             column, algorithm_score = minimax_pruned(board, DEPTH, -math.inf, math.inf, maximizing) #get the best move from the minimax algorithm
         case "Greedy":
-            column, algorithm_score = greedy_move(board, AI_PIECE)
+            column, algorithm_score = greedy_move(board, piece)
+        case "Las Vegas (Greedy)":
+            column, algorithm_score = las_vegas(board, piece)
         case "Random":
             valid_moves = get_valid_moves(board)
             column = random.choice(valid_moves)
         case "Monte Carlo":
             column, algorithm_score = monte_carlo_move(board, MONTE_CARLO_SIMULATIONS)
-        case "Negamax":
-            column, algorithm_score = negamax(board, DEPTH, color) #get the best move from the minimax algorithm
+        case "Monte Carlo Optimized":
+            column, algorithm_score = monte_carlo_optimized(board, MONTE_CARLO_SIMULATIONS, piece)
+        case "Negamax (Divergent Evolution)":
+            #column, algorithm_score = negamax(board, DEPTH, color) #get the best move from the minimax algorithm
+            column, algorithm_score = minimax_pruned_opt(board, DEPTH, -math.inf, math.inf, piece) #get the best move from the negamax algorithm
         case "Negamax with Alpha-Beta Pruning":
             column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, color) #get the best move from the negamax algorithm
         case _: #default is alpha-beta for now
@@ -233,7 +241,7 @@ while not finish:
 
     #calculate algorithm moves outside of event loop so they run every frame
     if turn == PLAYER and not finish and player_algorithm != "Human":
-        column, algorithm_score, elapsed = match_algorithm(player_algorithm, True, 1)
+        column, algorithm_score, elapsed = match_algorithm(player_algorithm, True, -1, PLAYER_PIECE)
         if valid_move(board, column):
             row = get_next_open_row(board, column)
             drop_piece(board, row, column, PLAYER_PIECE)
@@ -254,7 +262,7 @@ while not finish:
             move_record.append(column)
 
     if turn == AI and not finish:
-        column, algorithm_score, elapsed = match_algorithm(ai_algorithm, True, 1)
+        column, algorithm_score, elapsed = match_algorithm(ai_algorithm, True, 1, AI_PIECE)
         if valid_move(board, column):
             row = get_next_open_row(board, column) #top row of the column
             drop_piece(board, row, column, AI_PIECE)
