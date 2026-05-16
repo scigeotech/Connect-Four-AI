@@ -3,6 +3,7 @@ import pygame_widgets
 from pygame_widgets.dropdown import Dropdown #for the dropdown menu
 from pygame_widgets.textbox import TextBox #for the optional textbox
 from Board import * #get everything from board.py
+from SaveGame import * #for saving/loading games
 #note: most board functions were separated into board.py
 #so the AI algorithms can import from there instead of here
 #otherwise they would be importing from each other
@@ -28,6 +29,8 @@ player_algorithm = "Human" #human or selected algorithm for player 1
 ai_algorithm = str() #selected algorithm for AI
 ai_versus_iterations = 1 #number of AI-vs-AI games when algorithm is not "human"
 record = [0, 0, 0] #record of wins per adversary (player, ai, draw) in this session
+record_timeline = [] #list of game results in order (0 = player win, 1 = ai win, 2 = draw)
+game_records = [] #list of game data structs for all games in this session (for saving)
 player_decision_time_average = [0, 0] #total time and turns, so avg = time / turns
 ai_decision_time_average = [0, 0] #total time and turns, so avg = time / turns
 
@@ -230,10 +233,12 @@ while not finish:
                 #print("Player dropped piece at row " + str(row) + ", column " + str(column))
                 if winning_move(board, PLAYER_PIECE):
                     record[0] += 1 #add 1 player win to the record
+                    record_timeline.append(0) #add player win to timeline
                     print("-----> Player wins!")
                     finish = True
                 elif is_terminal_node(board):
                     record[2] += 1 #add 1 draw to the record
+                    record_timeline.append(2) #add draw to timeline
                     print("It's a draw!")
                     finish = True
                 else:
@@ -252,10 +257,12 @@ while not finish:
             #print("Player algorithm dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
             if winning_move(board, PLAYER_PIECE):
                 record[0] += 1 #add 1 player win to the record
+                record_timeline.append(0) #add player win to timeline
                 print("-----> Player wins!")
                 finish = True
             elif is_terminal_node(board):
                 record[2] += 1 #add 1 draw to the record
+                record_timeline.append(2) #add draw to timeline
                 print("It's a draw!")
                 finish = True
             else:
@@ -273,10 +280,12 @@ while not finish:
             #print("AI dropped piece at row " + str(row) + ", column " + str(column) + " (calculated in " + str(elapsed) + " ms" + " for depth " + str(DEPTH) + ")")
             if winning_move(board, AI_PIECE):
                 record[1] += 1 #add 1 AI win to the record
+                record_timeline.append(1) #add AI win to timeline
                 print("-----> AI wins!")
                 finish = True
             elif is_terminal_node(board):
                 record[2] += 1 #add 1 draw to the record
+                record_timeline.append(2) #add draw to timeline
                 print("It's a draw!")
                 finish = True
             else:
@@ -285,34 +294,42 @@ while not finish:
             move_record.append(column)
     
     if finish:
-            if player_algorithm != "Human" and iterations_remaining > 1:
-                print("Game finished! Move record: " + str(move_record))
-                iterations_remaining -= 1
-                board, move_record, turn, finish = reset_game()
-                draw_board(board)
-                print(f"Starting next AI vs AI game! ({iterations_remaining} iterations remaining)")
-            else:
-                print("Game finished! Move record: " + str(move_record))
-                print(f"[RECORD DATA:] Player wins: {record[0]} ({record[0]/sum(record)*100:.1f}%), AI wins: {record[1]} ({record[1]/sum(record)*100:.1f}%), Draws: {record[2]} ({record[2]/sum(record)*100:.1f}%)")
-                if player_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
-                    print(f"Average AI-1 ({player_algorithm}) decision time: {player_decision_time_average[0] / player_decision_time_average[1]:.2f} ms")
-                if ai_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
-                    print(f"Average AI-2 ({ai_algorithm}) decision time: {ai_decision_time_average[0] / ai_decision_time_average[1]:.2f} ms")
-                print("Press enter to repeat, or any other key to quit (you can also just close the window).")
-                waiting_for_input = True #NOTE: put a win/loss indicator so user doesn't have to check console
-                while waiting_for_input:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            waiting_for_input = False
+        if player_algorithm != "Human" and iterations_remaining > 1:
+            game_records.append(move_record.copy()) #save the move record of this game
+            print("Game finished! Move record: " + str(move_record))
+            iterations_remaining -= 1
+            board, move_record, turn, finish = reset_game()
+            draw_board(board)
+            print(f"Starting next AI vs AI game! ({iterations_remaining} iterations remaining)")
+        else:
+            print("Game finished! Move record: " + str(move_record))
+            saved = save_game(structure_save(game_records, record_timeline, player_algorithm, ai_algorithm, player_decision_time_average[0] / max(player_decision_time_average[1], 1), ai_decision_time_average[0] / max(ai_decision_time_average[1], 1))) #save the game data
+            print(f"\n[RECORD DATA:] Player wins: {record[0]} ({record[0]/sum(record)*100:.1f}%), AI wins: {record[1]} ({record[1]/sum(record)*100:.1f}%), Draws: {record[2]} ({record[2]/sum(record)*100:.1f}%)")
+            print("Record timeline (0 = Player win, 1 = AI win, 2 = Draw): " + str(record_timeline))
+            if player_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
+                print(f"Average AI-1 ({player_algorithm}) decision time: {player_decision_time_average[0] / player_decision_time_average[1]:.2f} ms")
+            if ai_decision_time_average[1] > 0: #safety check but should be above 0 no matter what, anyway
+                print(f"Average AI-2 ({ai_algorithm}) decision time: {ai_decision_time_average[0] / ai_decision_time_average[1]:.2f} ms")
+            print() #newline
+            print(f"Game data was saved to: {saved} as \n" + load_game(saved).__str__()) #load the saved game data and print it to verify it was saved correctly
+            print("Press enter to repeat, or any other key to quit (you can also just close the window).")
+            waiting_for_input = True #NOTE: put a win/loss indicator so user doesn't have to check console
+            while waiting_for_input:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        waiting_for_input = False
+                        finish = True
+                    if event.type == pygame.KEYDOWN:
+                        waiting_for_input = False
+                        if event.key == pygame.K_RETURN:
+                            board, move_record, turn, finish = reset_game() #reset game variables
+                            record = [0, 0, 0] #reset record
+                            record_timeline.clear() #clear timeline
+                            game_records.clear() #clear list of game data structs
+                            iterations_remaining = ai_versus_iterations if player_algorithm != "Human" else 1
+                            draw_board(board) #update game state
+                        else:
                             finish = True
-                        if event.type == pygame.KEYDOWN:
-                            waiting_for_input = False
-                            if event.key == pygame.K_RETURN:
-                                board, move_record, turn, finish = reset_game() #reset game variables
-                                iterations_remaining = ai_versus_iterations if player_algorithm != "Human" else 1
-                                draw_board(board) #update game state
-                            else:
-                                finish = True
             
 
 pygame.quit()
