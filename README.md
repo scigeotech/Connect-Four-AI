@@ -1,5 +1,5 @@
 # Connect Four AI
-NOTE: Before running the project, there are certain requirements you need (in requirements.txt)
+NOTE: Before running the project, there are certain requirements you need (in requirements.txt).
 Install them with "pip install -r requirements.txt" in your terminal.
 
 To run the code, enter "python .\ConnectFourGame.py" in your terminal.
