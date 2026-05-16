@@ -64,13 +64,14 @@ def start_menu():
     font_small = pygame.font.SysFont("monospace", 20)
     choices = [
         'Human',
-        'Minimax (Optimized v2)',
-        #'Minimax with Alpha-Beta Pruning',
-        #'Random',
+        'Minimax with Alpha-Beta Pruning (Optimized v2)',
+        'Minimax with Alpha-Beta Pruning',
+        'Random',
         'Greedy',
         'Las Vegas (Greedy)',
         'Monte Carlo',
         'Monte Carlo Optimized',
+        'Flat Monte Carlo',
         'Negamax (Divergent Evolution)',
         'Negamax with Alpha-Beta Pruning'
     ]
@@ -86,14 +87,14 @@ def start_menu():
         fontSize=24
     )
     dropdown_player = Dropdown(
-        screen, 50, height // 2 - 60, 320, 50,
+        screen, 50, height // 2 - 60, 320, 25,
         name='Player Algorithm',
         choices=choices,
         borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
         textHAlign='centre' #DO NOT MISSPELL AS "CENTER" OR IT WILL BREAKKK
     )
     dropdown_ai = Dropdown(
-        screen, width - 370, height // 2 - 60, 320, 50,
+        screen, width - 370, height // 2 - 60, 320, 25,
         name='AI Algorithm',
         choices=choices[1:],
         borderRadius=3, colour=pygame.Color('aquamarine'), direction='down',
@@ -162,7 +163,7 @@ def match_algorithm(insert_algorithm, maximizing, color, piece):
     algorithm_score = 0
     timer_start = pygame.time.get_ticks() #for timing the AI's move
     match insert_algorithm:
-        case "Minimax (Optimized v2)":
+        case "Minimax with Alpha-Beta Pruning (Optimized v2)":
             #column, algorithm_score = minimax(board, DEPTH, maximizing) #get the best move from the minimax algorithm
             column, algorithm_score = minimax_pruned_neutral(board, DEPTH, -math.inf, math.inf, maximizing, piece) #get the best move from the minimax algorithm
         case "Minimax with Alpha-Beta Pruning":
@@ -179,8 +180,9 @@ def match_algorithm(insert_algorithm, maximizing, color, piece):
         case "Monte Carlo Optimized":
             column, algorithm_score = monte_carlo_optimized(board, MONTE_CARLO_SIMULATIONS, piece)
         case "Negamax (Divergent Evolution)":
-            #column, algorithm_score = negamax(board, DEPTH, color) #get the best move from the minimax algorithm
-            column, algorithm_score = minimax_pruned_opt(board, DEPTH, -math.inf, math.inf, piece) #get the best move from the negamax algorithm
+            column, algorithm_score = monte_carlo_optimized(board, MONTE_CARLO_SIMULATIONS, piece)
+        case "Flat Monte Carlo":
+            column, algorithm_score = flat_mc(board, MONTE_CARLO_SIMULATIONS, piece)
         case "Negamax with Alpha-Beta Pruning":
             column, algorithm_score = negamax_pruned(board, DEPTH, -math.inf, math.inf, color) #get the best move from the negamax algorithm
         case _: #default is alpha-beta for now

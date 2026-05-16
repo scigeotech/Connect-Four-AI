@@ -24,6 +24,18 @@ def get_valid_moves(board):
         if valid_move(board, col):
             valid_moves.append(col) #this is a possible move, add to list
     return valid_moves
+    
+def move_ordering_column(width):
+    center = width // 2
+    return sorted(range(width), key=lambda x: abs(x - center)) #order columns by distance from center
+
+def ordered_valid_moves(board):
+    valid_moves = []
+    order = move_ordering_column(COLUMN_COUNT)
+    for col in order:
+        if valid_move(board, col):
+            valid_moves.append(col)
+    return valid_moves
 
 def get_next_open_row(board, col):
     for r in range(ROW_COUNT):
